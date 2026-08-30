@@ -68,6 +68,9 @@ def finish_summary(analysis, summary: dict, per_event: np.ndarray, *, objects: d
     if "sr_efficiency" not in summary:
         summary["sr_efficiency"] = float(p.mean()) if n else 0.0
         summary["sr_efficiency_err"] = float(p.std(ddof=1) / np.sqrt(n)) if n > 1 else 0.0
+    if n and summary.get("sr_efficiency", 0) >= 0:
+        # never quote a zero uncertainty: one event's worth is the floor (all-zero or all-one samples)
+        summary["sr_efficiency_err"] = max(float(summary.get("sr_efficiency_err", 0.0)), 1.0 / n)
     summary.setdefault("sr_efficiency_threshold05", float((p > 0.5).mean()) if n else 0.0)
     counts, edges = np.histogram(p, bins=30, range=(0.0, 1.0))
     summary["histogram"] = {"edges": edges.round(4).tolist(), "counts": counts.tolist()}

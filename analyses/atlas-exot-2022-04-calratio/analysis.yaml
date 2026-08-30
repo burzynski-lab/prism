@@ -52,6 +52,6 @@ training: >-
   (scikit-learn 1.4.2, ten trees per selection), with per-event inputs the kinematics and decay
   positions of the two long-lived particles, the identity of their decay products, and the vector
   boson kinematics for the W and Z selections. Published as reinterpretation material with the paper.
-example: example.hepmc.gz          # 100 Pythia events, gg -> H(125) -> S(55) S(55) -> b bbar, ctau = 5.32 m
+example: example.hepmc.gz          # 100 Pythia events, gg -> Phi(1000) -> S(275) S(275) -> b bbar, ctau = 1.4 m (CR+2J efficiency about 7%)
 validation: []
 figures: []

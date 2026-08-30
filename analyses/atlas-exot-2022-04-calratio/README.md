@@ -34,8 +34,14 @@ code returns -1 for every region, and so does this predictor.
 The published `example.py` reproduces the region-A efficiencies of the
 auxiliary-material tables from the authors' CSV inputs; this entry
 reproduces `example.py` exactly when given those CSV features. The mapping
-from HepMC to the CSV features was validated on a gluon-fusion sample
-generated here (see the repository's `tests/`).
+from HepMC to the CSV features was validated on a gluon-fusion
+gg -> H(125) -> S(55) S(55) -> b bbar sample with ctau = 5.32 m: the
+region-A efficiency from HepMC (0.0007 +- 0.0004) agrees with the value from
+the authors' CSV through the same model (0.0009), and the feature means
+agree to about 10%. That benchmark has a region-A efficiency below 0.1%, so
+a 100-event file returns 0; the example file offered here is instead
+gg -> Phi(1000) -> S(275) S(275) -> b bbar with ctau = 1.4 m (100 events,
+CR+2J efficiency about 7%), which gives a visible result.
 
 ## Provenance
 
