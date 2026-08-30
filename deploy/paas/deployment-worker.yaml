@@ -7,6 +7,7 @@ metadata:
       [{"from": {"kind": "ImageStreamTag", "name": "prism:latest"}, "fieldPath": "spec.template.spec.containers[?(@.name==\"worker\")].image"}]
 spec:
   replicas: 1                        # one job per worker at a time; the default project quota is 1 CPU of requests in total
+  strategy: {type: Recreate}         # the quota cannot hold the old and the new worker pod at once
   selector:
     matchLabels: {component: worker}
   template:
