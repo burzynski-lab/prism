@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: prism-cleanup
+spec:
+  schedule: "17 3 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: cleanup
+              image: ghcr.io/burzynski-lab/prism:latest
+              args: ["worker", "--cleanup-only"]
+              envFrom: [{configMapRef: {name: prism-config}}]
+              volumeMounts: [{name: data, mountPath: /data}]
+              resources:
+                requests: {cpu: 100m, memory: 256Mi}
+                limits: {cpu: 500m, memory: 1Gi}
+          volumes:
+            - name: data
+              persistentVolumeClaim: {claimName: prism-data}

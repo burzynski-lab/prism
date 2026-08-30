@@ -1,0 +1,39 @@
+[workspace]
+authors = ["Jackson Burzynski <jackson.carl.burzynski@cern.ch>"]
+channels = ["conda-forge"]
+name = "prism"
+platforms = ["linux-64", "osx-arm64"]
+version = "0.1.0"
+
+# One inference environment: the service, the HepMC reader and what the
+# library's predictors import. No generators, no detector simulation, no
+# training stack. A new analysis whose predictor needs another package adds
+# it here (and lists it under `requirements` in its analysis.yaml).
+#   pixi install && pixi run test
+[tasks]
+serve    = "prism serve"
+worker   = "prism worker"
+validate = "prism validate"
+test     = "pytest tests -v"
+
+[dependencies]
+python = "3.12.*"
+hepmc3 = "*"                 # pyHepMC3 reader
+numpy = "*"
+awkward = ">=2"
+vector = "*"
+h5py = "*"
+pyyaml = "*"
+markdown = "*"               # model cards
+fastapi = "*"
+uvicorn = "*"
+python-multipart = "*"
+httpx = "*"                  # API tests
+pytest = "*"
+# used by the library's predictors
+fastjet = ">=3.4"            # emerging-jets-delphes: truth jets
+pytorch = ">=2.4"            # emerging-jets-delphes: transformer surrogate (CPU build)
+scikit-learn = "*"           # atlas-exot-2022-04-calratio: pickled random forests
+
+[pypi-dependencies]
+prism = { path = ".", editable = true }

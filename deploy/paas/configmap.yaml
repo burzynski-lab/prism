@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prism-config
+data:
+  PRISM_SERVICE_DIR: /data
+  PRISM_ANALYSES_DIR: /app/analyses
+  PRISM_ASSET_DIR: /data/assets          # downloaded model files (Zenodo etc.), shared by the workers
+  PRISM_MAX_UPLOAD_MB: "2000"
+  PRISM_MAX_EVENTS: "20000"
+  PRISM_JOB_TTL_HOURS: "72"
+  OMP_NUM_THREADS: "2"

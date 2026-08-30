@@ -1,0 +1,10 @@
+.pixi/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+service_data/
+results/
+.DS_Store
+# downloaded assets of analyses (declared under `assets` in analysis.yaml)
+analyses/*/.assets/

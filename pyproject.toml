@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "prism"
+version = "0.1.0"
+description = "PRISM: a library of preserved LHC analyses with truth-level surrogates, and the service that runs them on HepMC files"
+requires-python = ">=3.11"
+
+[project.scripts]
+prism = "prism.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/prism"]

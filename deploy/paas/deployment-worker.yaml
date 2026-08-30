@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prism-worker
+  annotations:
+    image.openshift.io/triggers: >-
+      [{"from": {"kind": "ImageStreamTag", "name": "prism:latest"}, "fieldPath": "spec.template.spec.containers[?(@.name==\"worker\")].image"}]
+spec:
+  replicas: 1                        # one job per worker at a time; the default project quota is 1 CPU of requests in total
+  selector:
+    matchLabels: {component: worker}
+  template:
+    metadata:
+      labels: {component: worker}
+    spec:
+      containers:
+        - name: worker
+          image: prism:latest        # ImageStreamTag (lookupPolicy local), kept current by the trigger
+          args: ["worker"]
+          envFrom: [{configMapRef: {name: prism-config}}]
+          volumeMounts: [{name: data, mountPath: /data}]
+          resources:
+            requests: {cpu: 500m, memory: 2Gi}
+            limits: {cpu: "1", memory: 4Gi}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: prism-data}
