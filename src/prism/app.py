@@ -85,6 +85,7 @@ def create_app() -> FastAPI:
                     store.update(job.id, status="failed", error=f"upload exceeds {cfg['max_upload_mb']:g} MB")
                     raise HTTPException(413, f"upload exceeds {cfg['max_upload_mb']:g} MB")
                 out.write(chunk)
+        store.enqueue(job.id)                       # visible to the workers only now that the input is complete
         return JSONResponse({"id": job.id, "status": job.status})
 
     @app.get("/api/jobs")

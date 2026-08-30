@@ -2,8 +2,8 @@
 
 One image (`Dockerfile`) runs three roles: `prism serve` (web pod),
 `prism worker` (worker pods) and `prism worker --cleanup-only` (CronJob).
-Jobs live on a shared PersistentVolumeClaim as `jobs.db` (SQLite, WAL) plus
-one directory per job; downloaded model assets live there too
+Jobs live on a shared PersistentVolumeClaim as `jobs/<id>/job.json` plus
+one directory per job and a queue of marker files (no database, safe across nodes); downloaded model assets live there too
 (`PRISM_ASSET_DIR`). Configuration is the `ConfigMap` (`PRISM_*` variables).
 
 ## One-time setup
