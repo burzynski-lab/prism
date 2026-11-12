@@ -68,9 +68,9 @@
         <p class="eyebrow">PRISM · <span data-info-tagline>Physics Reinterpretation with Intelligent Surrogate Models</span></p>
         <h1 class="page-title">Surrogate reinterpretation</h1>
         <p class="page-subtitle">
-          Upload generator-level events for a new signal model and get back the
+          Upload generator-level events for a signal model and get the
           signal-region efficiency of a preserved LHC analysis, predicted by a
-          machine-learned surrogate of that analysis.
+          surrogate of that analysis.
         </p>
         <div class="btn-row">
           <a class="btn btn--primary" href="analyses.html">Browse analyses</a>
@@ -84,18 +84,18 @@
           <ol class="steps">
             <li>
               <span class="step__num" aria-hidden="true">1</span>
-              <h3>Pick a preserved analysis</h3>
-              <p>Each entry in our library is a published search with its own surrogate, a model card and validation plots. <a href="analyses.html">Browse the library.</a></p>
+              <h3>Pick an analysis</h3>
+              <p>Each has its own surrogate, model card and validation plots.</p>
             </li>
             <li>
               <span class="step__num" aria-hidden="true">2</span>
-              <h3>Upload your HepMC file</h3>
-              <p>Generator-level events of your signal model in HepMC2 or HepMC3 format, gzipped if you like. No detector simulation needed.</p>
+              <h3>Upload a HepMC file</h3>
+              <p>HepMC2 or HepMC3, optionally gzipped. No detector simulation.</p>
             </li>
             <li>
               <span class="step__num" aria-hidden="true">3</span>
               <h3>Get the efficiency</h3>
-              <p>The signal-region efficiency with its statistical uncertainty, plus per-event probabilities in an HDF5 file you can use in your own limit setting.</p>
+              <p>With its statistical uncertainty, and per-event probabilities as HDF5.</p>
             </li>
           </ol>
         </div>
@@ -105,28 +105,17 @@
         <h2>Why surrogates</h2>
         <div class="section__body">
           <p>
-            Reinterpretation asks a simple question: would a published search
-            also have seen my model? Answering it needs the analysis selection,
-            and modern searches increasingly make that selection with
-            machine-learned classifiers that read low-level detector inputs such
-            as tracks and calorimeter clusters. The response of such a classifier
-            to a new model cannot be evaluated without a full detector simulation,
-            which is exactly what people outside the collaboration do not have.
+            Many searches select events with classifiers that read tracks and
+            calorimeter clusters, so evaluating them on a new model needs the
+            collaboration's detector simulation. A surrogate is trained on the
+            same simulated samples to reproduce the analysis decision from
+            generator-level particles and decay vertices. Its per-event
+            probability, averaged over your events, is the signal-region
+            efficiency. Each analysis page shows how well the surrogate tracks
+            the full analysis.
           </p>
           <p>
-            A surrogate is a second model, trained by the analysis team on the
-            same simulated samples, that learns to reproduce the analysis
-            decision from generator truth alone. Given the stable particles and
-            decay vertices of an event it predicts the probability that the
-            event would enter the signal region. Averaged over your events, that
-            probability is the efficiency you need. Each surrogate ships with a
-            validation section that shows how well it tracks the full analysis
-            across the models it was tested on, so you can judge how far to trust
-            it for yours.
-          </p>
-          <p>
-            We host the library and run the surrogates. Analysis teams add their
-            preserved analyses by pull request. <a href="contribute.html">Learn how to contribute one.</a>
+            Analyses are added by pull request. <a href="contribute.html">How to contribute one</a>
           </p>
         </div>
       </section>
@@ -136,7 +125,7 @@
         <p class="section__rail-note" data-info-count></p>
         <div class="section__body">
           <div class="card-grid" id="featured" aria-live="polite">
-            <div class="empty">Loading the analysis library.</div>
+            <div class="empty">Loading analyses.</div>
           </div>
           <div class="btn-row">
             <a class="btn btn--tertiary" href="analyses.html">All analyses</a>

@@ -66,15 +66,11 @@
 
       <div class="page-head">
         <h1 class="page-title">Submit a model</h1>
-        <p class="page-subtitle">
-          Choose an analysis, upload a HepMC file of your signal model and we
-          return the predicted signal-region efficiency.
-        </p>
       </div>
 
       <section class="section section--first">
-        <h2>Your submission</h2>
-        <p class="section__rail-note">Files up to <span data-info-max-upload>2 GB</span>. Uploads show progress, and jobs keep running if you close the page.</p>
+        <h2>Submission</h2>
+        <p class="section__rail-note">Files up to <span data-info-max-upload>2 GB</span></p>
         <div class="section__body">
           <form class="form" id="submit-form" novalidate>
             <div class="field">
@@ -83,7 +79,7 @@
                 <option value="">Loading analyses</option>
               </select>
               <p class="field__help" id="analysis-help"></p>
-              <p class="field__help"><a id="analysis-link" href="analyses.html" hidden>About this analysis and its validation</a></p>
+              <p class="field__help"><a id="analysis-link" href="analyses.html" hidden>Analysis details and validation</a></p>
             </div>
 
             <div class="field">
@@ -98,9 +94,8 @@
             </div>
 
             <div class="field">
-              <label for="label">Model description (optional)</label>
-              <input type="text" id="label" name="label" maxlength="200" placeholder="for example: benchmark A, m = 500 GeV, ctau = 1 m" autocomplete="off">
-              <p class="field__help">Shown in the job list so you can find this result again.</p>
+              <label for="label">Label (optional)</label>
+              <input type="text" id="label" name="label" maxlength="200" placeholder="m = 500 GeV, ctau = 1 m" autocomplete="off">
             </div>
 
             <div class="field field--narrow">
@@ -127,29 +122,12 @@
       </section>
 
       <section class="section">
-        <h2>What you get</h2>
+        <h2>Signal region</h2>
         <div class="section__body">
-          <p>
-            The <strong>signal-region efficiency</strong> is the predicted fraction
-            of your events that would pass the selection of the chosen analysis.
-            Its definition is set by the analysis:
-          </p>
-          <p id="signal-region" class="muted">Pick an analysis to see its signal-region definition.</p>
-          <p>
-            You also get the statistical uncertainty on that fraction, the number
-            of events and truth jets used, the mean per-jet probability, a
-            histogram of the per-event probabilities and an HDF5 file with the
-            per-event values for your own limit setting. The uncertainty covers
-            the size of your sample only. How well the surrogate reproduces the
-            full analysis is documented on each analysis page.
-          </p>
-          <h4>What the file needs to contain</h4>
+          <p id="signal-region" class="muted"></p>
+          <h4>Input requirements</h4>
           <ul id="inputs-list"></ul>
-          <p class="muted small">
-            Your file is stored only for as long as the job needs it and the
-            results stay available through the permalink. Do not upload data
-            you are not allowed to share with the service operators.
-          </p>
+          <p class="muted small">Uploads are deleted after processing. Results are kept for a limited time.</p>
         </div>
       </section>
     </div>
