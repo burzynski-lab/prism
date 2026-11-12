@@ -51,6 +51,30 @@ def model_space(name: str, x: np.ndarray) -> np.ndarray:
     return x
 
 
+def primary_vertex_z(part) -> np.ndarray:
+    """Per-event z of the primary interaction, the median production z of the
+    prompt particles (those made within 1 mm of the beamline).
+
+    Every longitudinal quantity is measured from this point, so the features do
+    not depend on where along the beamline the event was placed. The training
+    samples were simulated with pile-up, which moves the hard scatter along z;
+    without this reference an uploaded generator file would be scored out of
+    distribution.
+    """
+    n = ak.to_numpy(ak.num(part.pt))
+    p = ak.flatten(part)
+    z = ak.to_numpy(p.z)
+    prompt = np.hypot(ak.to_numpy(p.x), ak.to_numpy(p.y)) < 1.0
+    ev = np.repeat(np.arange(len(n)), n)
+    pv = np.zeros(len(n), dtype=np.float32)
+    if prompt.any():
+        order = np.lexsort((z[prompt], ev[prompt]))
+        e, zz = ev[prompt][order], z[prompt][order]
+        _, start, cnt = np.unique(e, return_index=True, return_counts=True)
+        pv[np.unique(e)] = zz[start + cnt // 2]
+    return pv
+
+
 def padded_dtype(floats, cats):
     return np.dtype([(n, "f4") for n in floats] + [(n, "i4") for n in cats] + [("valid", "?")])
 
@@ -76,9 +100,13 @@ def pad_groups(jet_id: np.ndarray, n_jets: int, sort_key: np.ndarray, columns: d
 
 
 # ---------------------------------------------------------------- truth particles
-def particle_columns(part: ak.Array, jet_id: np.ndarray, jets: np.ndarray) -> tuple[dict, np.ndarray]:
+def particle_columns(part: ak.Array, jet_id: np.ndarray, jets: np.ndarray,
+                     pv_z: np.ndarray | None = None) -> tuple[dict, np.ndarray]:
     """Flat per-particle feature columns (status 1 or 2, pT > PART_PT_MIN, not
-    a neutrino) relative to the associated truth large-R jet."""
+    a neutrino) relative to the associated truth large-R jet. ``pv_z`` is the
+    per-event primary vertex; every z is referred to it, so that production and
+    decay vertices, and hence flight lengths, do not depend on where the event
+    sits along the beamline."""
     n = ak.to_numpy(ak.num(part.pt))
     off = np.concatenate([[0], np.cumsum(n)])
     p = ak.flatten(part)
@@ -90,6 +118,8 @@ def particle_columns(part: ak.Array, jet_id: np.ndarray, jets: np.ndarray) -> tu
     x = ak.to_numpy(p.x); y = ak.to_numpy(p.y); z = ak.to_numpy(p.z)
     d1 = ak.to_numpy(p.d1); d2 = ak.to_numpy(p.d2)
     ev = np.repeat(np.arange(len(n)), n)
+    if pv_z is not None:
+        z = z - pv_z[ev]
     # Status 1 stable, 2 decayed hadron or tau (HepMC convention); Pythia keeps
     # its own codes for dark hadrons: 81-89 from fragmentation, 91-99 from
     # decays. Keep every stable particle and every decayed physical particle,

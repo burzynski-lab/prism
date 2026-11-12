@@ -25,7 +25,7 @@ def truth_tables(part) -> tuple[np.ndarray, np.ndarray]:
     truth = recluster_large_r(small_r_jets_from_particles(part), pt_min=TRUTH_PT_MIN)
     part_jet = associate(part, truth)
     jets = jet_table(truth, np.zeros(len(truth), np.int32))
-    cols, part_jet = F.particle_columns(part, part_jet, jets)
+    cols, part_jet = F.particle_columns(part, part_jet, jets, pv_z=F.primary_vertex_z(part))
     jets["n_assoc"] = np.bincount(part_jet[part_jet >= 0], minlength=len(truth))
     parts = F.pad_groups(part_jet, len(truth), cols["pt"], cols, F.MAX_PART, F.PART_FLOATS, F.PART_CATS)
     return jets, parts
