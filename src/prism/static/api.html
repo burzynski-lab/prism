@@ -66,10 +66,7 @@
 
       <div class="page-head">
         <h1 class="page-title">API</h1>
-        <p class="page-subtitle">
-          Everything the site does is available as a JSON API, so you can
-          submit files and collect results from a script.
-        </p>
+        <p class="page-subtitle">The site uses this JSON API, so anything it does can be scripted.</p>
         <div class="btn-row">
           <a class="btn btn--tertiary" href="/docs">Interactive OpenAPI docs</a>
         </div>
@@ -82,10 +79,10 @@
           <pre><code>curl -F analysis=&lt;id&gt; -F file=@events.hepmc -F &quot;label=m = 8 GeV&quot; -F max_events=20000 \
      https://&lt;host&gt;/api/jobs
 # {&quot;id&quot;: &quot;abc123def456&quot;, &quot;status&quot;: &quot;queued&quot;}</code></pre>
-          <p>Poll the job until <code>status</code> is <code>done</code> or <code>failed</code>. Jobs are queued and run one after another:</p>
+          <p>Poll until <code>status</code> is <code>done</code> or <code>failed</code>:</p>
           <pre><code>curl https://&lt;host&gt;/api/jobs/&lt;id&gt;
 # {&quot;id&quot;: &quot;abc123def456&quot;, &quot;status&quot;: &quot;done&quot;, &quot;result&quot;: {&quot;sr_efficiency&quot;: 0.4123, ...}}</code></pre>
-          <p>Then fetch the per-event probabilities and the log:</p>
+          <p>Fetch the per-event probabilities and the log:</p>
           <pre><code>curl -O -J https://&lt;host&gt;/api/jobs/&lt;id&gt;/result.h5   # per-event probabilities
 curl https://&lt;host&gt;/api/jobs/&lt;id&gt;/log                # job log</code></pre>
           <p>Analysis ids come from the library:</p>
@@ -106,12 +103,14 @@ curl https://&lt;host&gt;/api/analyses/&lt;id&gt;</code></pre>
           <p>The full record: the summary fields plus <code>description_html</code>, <code>signal_region</code>, <code>inputs</code>, <code>references</code>, <code>validation</code>, <code>figures</code>, <code>model</code> and <code>contact</code>.</p>
           <div class="endpoint"><span class="method">GET</span><code>/api/analyses/{id}/figures/{file}</code></div>
           <p>A validation figure (PNG).</p>
+          <div class="endpoint"><span class="method">GET</span><code>/api/analyses/{id}/example</code></div>
+          <p>The example HepMC file of the analysis, if it has one.</p>
           <div class="endpoint"><span class="method method--post">POST</span><code>/api/jobs</code></div>
-          <p>Submit a job. Multipart form fields: <code>analysis</code> (id), <code>file</code> (HepMC2 or HepMC3 ASCII, optionally gzipped), optional <code>label</code> and <code>max_events</code>. Returns <code>{"id", "status"}</code>.</p>
+          <p>Submit a job. Multipart form fields: <code>analysis</code> (id), <code>file</code> (HepMC2 or HepMC3 ASCII, optionally gzipped), optional <code>label</code>, <code>max_events</code> and <code>options</code> (a JSON object of the analysis' options). Returns <code>{"id", "status"}</code>.</p>
           <div class="endpoint"><span class="method">GET</span><code>/api/jobs?limit=50</code></div>
           <p>Recent jobs, newest first.</p>
           <div class="endpoint"><span class="method">GET</span><code>/api/jobs/{id}</code></div>
-          <p>One job: <code>id</code>, <code>analysis</code>, <code>status</code> (queued, running, done or failed), <code>created</code>, <code>started</code> and <code>finished</code> as Unix seconds, <code>label</code>, <code>source</code>, <code>max_events</code>, <code>progress</code>, <code>error</code> and, when done, <code>result</code> with <code>n_events</code>, <code>sr_efficiency</code>, <code>sr_efficiency_err</code>, <code>sr_efficiency_threshold05</code>, <code>analysis</code>, <code>version</code>, <code>model</code>, <code>predictor_type</code>, a <code>histogram</code> of the per-event probabilities (<code>edges</code>, <code>counts</code>) and, for predictors that act on objects inside the event, <code>objects</code> (<code>label</code>, <code>count</code>, <code>mean_probability</code>); predictors may add <code>quantities</code>, a list of <code>{name, value, err, unit, note}</code> such as an expected yield. Jet-based analyses also keep <code>n_truth_jets</code> and <code>mean_jet_probability</code>.</p>
+          <p>One job: <code>id</code>, <code>analysis</code>, <code>status</code> (queued, running, done or failed), <code>created</code>, <code>started</code> and <code>finished</code> as Unix seconds, <code>label</code>, <code>source</code>, <code>max_events</code>, <code>progress</code>, <code>error</code> and, when done, <code>result</code> with <code>n_events</code>, <code>sr_efficiency</code>, <code>sr_efficiency_err</code>, <code>sr_efficiency_threshold05</code>, <code>analysis</code>, <code>version</code>, <code>model</code>, <code>predictor_type</code>, a <code>histogram</code> of the per-event probabilities (<code>edges</code>, <code>counts</code>) and, for predictors that act on objects inside the event, <code>objects</code> (<code>label</code>, <code>count</code>, <code>mean_probability</code>); predictors may add <code>quantities</code>, a list of <code>{name, value, err, unit, note}</code> such as an expected yield.</p>
           <div class="endpoint"><span class="method">GET</span><code>/api/jobs/{id}/result.h5</code></div>
           <p>The per-event probabilities as an HDF5 file (download).</p>
           <div class="endpoint"><span class="method">GET</span><code>/api/jobs/{id}/log</code></div>
@@ -125,8 +124,7 @@ curl https://&lt;host&gt;/api/analyses/&lt;id&gt;</code></pre>
           <ul>
             <li>The upload limit is reported by <code>/api/info</code> (<code>max_upload_mb</code>). Gzip large files.</li>
             <li><code>max_events</code> is capped at the <code>max_events</code> of the analysis.</li>
-            <li>Poll no more often than every few seconds. Jobs typically take a few minutes.</li>
-            <li>The web pages use exactly this API, so anything you see on the site you can script.</li>
+            <li>Poll every few seconds at most. Jobs usually take a few minutes.</li>
           </ul>
         </div>
       </section>

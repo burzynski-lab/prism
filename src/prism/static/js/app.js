@@ -334,7 +334,7 @@ window.PRISM_POLL_MS = window.PRISM_POLL_MS || 3000;
       out += '<line class="hist__axis" x1="' + sx(v) + '" x2="' + sx(v) + '" y1="' + sy(0) + '" y2="' + (sy(0) + 4) + '"/>';
       out += '<text class="hist__text" x="' + sx(v) + '" y="' + (sy(0) + 16) + '" text-anchor="middle">' + v.toFixed(1) + '</text>';
     }
-    out += '<text class="hist__text" x="' + ((L + W - R) / 2) + '" y="' + (H - 6) + '" text-anchor="middle">probability that the event enters the signal region</text>';
+    out += '<text class="hist__text" x="' + ((L + W - R) / 2) + '" y="' + (H - 6) + '" text-anchor="middle">P(event in signal region)</text>';
     out += '<text class="hist__text" transform="translate(12 ' + ((T + sy(0)) / 2) + ') rotate(-90)" text-anchor="middle">events</text>';
     out += '</svg>';
     return out;
@@ -345,9 +345,9 @@ window.PRISM_POLL_MS = window.PRISM_POLL_MS || 3000;
   function statusPanel(job) {
     const permalink = 'jobs.html?id=' + encodeURIComponent(job.id);
     let text = '';
-    if (job.status === 'queued') text = 'Waiting for a worker. Jobs run one after another, so this can take a few minutes when the service is busy.';
-    else if (job.status === 'running') text = 'Running the surrogate' + (job.progress ? ': ' + job.progress : '') + '. You can leave this page and come back with the permalink below.';
-    else if (job.status === 'failed') text = job.error || 'The job failed. Check the log for details.';
+    if (job.status === 'queued') text = 'Waiting for a worker.';
+    else if (job.status === 'running') text = 'Running' + (job.progress ? ': ' + job.progress : '') + '.';
+    else if (job.status === 'failed') text = job.error || 'Job failed. See the log.';
     else text = 'Finished' + (job.finished && job.started ? ' in ' + fmt.duration(job.started, job.finished) : '') + '.';
     const busy = job.status === 'queued' || job.status === 'running';
     return el('<section class="status-panel" aria-live="polite">' +
@@ -364,7 +364,6 @@ window.PRISM_POLL_MS = window.PRISM_POLL_MS || 3000;
     const a = analysis || {};
     const permalink = 'jobs.html?id=' + encodeURIComponent(job.id);
     const title = a.title || job.analysis || r.analysis || '';
-    const sr = a.signal_region ? esc(a.signal_region) : 'the signal region defined by this analysis';
     const html = '<section class="result" aria-label="Result of job ' + esc(job.id) + '">' +
       '<div class="result__head">' +
       '<div class="tag-row">' + jobStatusTag(job.status) + (a.experiment ? experimentTag(a) : '') + '</div>' +
@@ -379,27 +378,25 @@ window.PRISM_POLL_MS = window.PRISM_POLL_MS || 3000;
       '<div class="stat stat--big"><span class="stat__label">Signal-region efficiency</span>' +
       '<span class="stat__value">' + esc(Number(r.sr_efficiency).toFixed(fmt.effDigits(r.sr_efficiency_err))) +
       '<span class="stat__err">± ' + esc(Number(r.sr_efficiency_err).toFixed(fmt.effDigits(r.sr_efficiency_err))) + '</span></span>' +
-      '<span class="stat__pct">' + esc(fmt.pct(r.sr_efficiency, r.sr_efficiency_err)) + ' of your events</span></div>' +
+      '<span class="stat__pct">' + esc(fmt.pct(r.sr_efficiency, r.sr_efficiency_err)) + ' of events (stat. only)</span></div>' +
       '<div class="stat-row">' +
-      '<div class="stat"><span class="stat__label">Events analysed</span><span class="stat__value">' + esc(fmt.int(r.n_events)) + '</span></div>' +
+      '<div class="stat"><span class="stat__label">Events</span><span class="stat__value">' + esc(fmt.int(r.n_events)) + '</span></div>' +
       (r.objects ? '<div class="stat"><span class="stat__label">' + esc(cap(r.objects.label || 'objects')) + '</span><span class="stat__value">' + esc(fmt.int(r.objects.count)) + '</span></div>' +
         (r.objects.mean_probability != null ? '<div class="stat"><span class="stat__label">Mean probability per ' + esc(singular(r.objects.label || 'object')) + '</span><span class="stat__value">' + esc(fmt.prob(r.objects.mean_probability)) + '</span></div>' : '')
        : (r.n_truth_jets != null ? '<div class="stat"><span class="stat__label">Truth jets</span><span class="stat__value">' + esc(fmt.int(r.n_truth_jets)) + '</span></div>' : '')) +
       (r.quantities || []).map(q => '<div class="stat"><span class="stat__label">' + esc(cap(q.name)) + (q.note ? ' <span class="muted">(' + esc(q.note) + ')</span>' : '') + '</span><span class="stat__value">' + esc(fmt.num(q.value)) + (q.err != null ? '<span class="stat__err">± ' + esc(fmt.num(q.err)) + '</span>' : '') + (q.unit ? ' <span class="muted">' + esc(q.unit) + '</span>' : '') + '</span></div>').join('') +
-      (r.sr_efficiency_threshold05 != null && r.objects ? '<div class="stat"><span class="stat__label">Efficiency counting ' + esc(r.objects.label || 'objects') + ' at p &gt; 0.5</span><span class="stat__value">' + esc(Number(r.sr_efficiency_threshold05).toFixed(fmt.effDigits(r.sr_efficiency_err))) + '</span></div>' : '') +
+      (r.sr_efficiency_threshold05 != null && r.objects ? '<div class="stat"><span class="stat__label">Efficiency with p &gt; 0.5 cut</span><span class="stat__value">' + esc(Number(r.sr_efficiency_threshold05).toFixed(fmt.effDigits(r.sr_efficiency_err))) + '</span></div>' : '') +
       '</div>' +
       '<p class="muted small" style="margin:0">Surrogate ' + esc(r.model || a.model && a.model.file || '') + (r.version ? ', version ' + esc(r.version) : '') + '</p>' +
       '</div>' +
       '<div class="result__cell">' + histogramSvg(r.histogram) +
-      '<p class="hist__caption">Each event gets a probability of entering the signal region, computed by the predictor of this analysis. The efficiency is the mean of this distribution. The per-event values are in the HDF5 download.</p></div>' +
+      '<p class="hist__caption">The efficiency is the mean of this distribution.</p></div>' +
       '</div>' +
-      '<p class="result__explain"><strong>What this number means.</strong> The efficiency is the predicted fraction of your events that would pass the selection of this analysis: ' + sr + ' The uncertainty is statistical (from the number of events you uploaded) and does not include the accuracy of the surrogate itself, which is documented on the analysis page.' +
-      (r.sr_efficiency_threshold05 != null && r.objects ? ' The second efficiency counts an object as selected only when its probability is above 0.5, a cross-check that should agree with the main number when the surrogate is confident.' : '') + '</p>' +
       '<div class="result__links">' +
       '<a href="' + esc(jobUrl(job.id, '/result.h5')) + '">' + ICONS.download + ' Per-event probabilities (HDF5)</a>' +
       '<a href="' + esc(jobUrl(job.id, '/log')) + '" target="_blank" rel="noopener">' + ICONS.doc + ' Job log</a>' +
       '<a href="' + esc(permalink) + '">' + ICONS.link + ' Permalink</a>' +
-      (a.id ? '<a href="analysis.html?id=' + esc(encodeURIComponent(a.id)) + '">About this analysis</a>' : '') +
+      (a.id ? '<a href="analysis.html?id=' + esc(encodeURIComponent(a.id)) + '">Analysis page</a>' : '') +
       '</div></section>';
     return el(html);
   }
@@ -462,7 +459,7 @@ window.PRISM_POLL_MS = window.PRISM_POLL_MS || 3000;
       document.querySelectorAll('[data-info-max-upload]').forEach(n => { if (info.max_upload_mb) n.textContent = fmt.bytes(info.max_upload_mb * 1e6); });
       if (fixtureMode) {
         const f = $('.site-footer__inner');
-        if (f) f.appendChild(el('<span class="muted">Preview mode: showing sample data from fixtures/ because the API is unreachable.</span>'));
+        if (f) f.appendChild(el('<span class="muted">Preview with sample data (API unreachable).</span>'));
       }
     }).catch(() => {});
   }
@@ -491,7 +488,7 @@ window.PRISM_POLL_MS = window.PRISM_POLL_MS || 3000;
     const root = $('#analysis');
     if (!id) {
       root.innerHTML = '';
-      root.appendChild(notification('warning', 'No analysis selected.', 'Pick one from the library.', ' <a href="analyses.html">Go to the library</a>'));
+      root.appendChild(notification('warning', 'No analysis selected.', '', ' <a href="analyses.html">Browse analyses</a>'));
       return;
     }
     apiGet('/analyses/' + encodeURIComponent(id)).then(a => {
@@ -501,9 +498,8 @@ window.PRISM_POLL_MS = window.PRISM_POLL_MS || 3000;
       $('#a-tags').innerHTML = experimentTag(a) + statusTag(a) + (a.tags || []).map(t => tag(t, 'tag--gray')).join('');
       const submit = 'submit.html?analysis=' + encodeURIComponent(a.id);
       $('#a-submit').href = submit;
-      $('#a-submit-2').href = submit;
-      if (a.repo_url) { $('#a-readme').href = safeUrl(a.repo_url); $('#a-readme-2').href = safeUrl(a.repo_url); }
-      else { $('#a-readme').hidden = true; $('#a-readme-2').hidden = true; }
+      if (a.repo_url) $('#a-readme').href = safeUrl(a.repo_url);
+      else $('#a-readme').hidden = true;
       $('#a-description').innerHTML = a.description_html || '<p class="muted">No description provided.</p>';
       $('#a-signal-region').textContent = a.signal_region || 'Not specified.';
       const inputs = $('#a-inputs');
@@ -553,7 +549,7 @@ window.PRISM_POLL_MS = window.PRISM_POLL_MS || 3000;
         '<dt>Updated</dt><dd>' + esc(a.updated || '') + '</dd>' +
         (a.contact ? '<dt>Contact</dt><dd>' + esc(a.contact) + '</dd>' : '') +
         '</dl>' +
-        (m.training ? '<h4>Training summary</h4><p>' + esc(m.training) + '</p>' : '');
+        (m.training ? '<h4>Training</h4><p>' + esc(m.training) + '</p>' : '');
       root.hidden = false;
       $('#analysis-loading').hidden = true;
     }).catch(err => {
@@ -627,16 +623,16 @@ window.PRISM_POLL_MS = window.PRISM_POLL_MS || 3000;
       maxInput.value = current.default_max_events || '';
       maxInput.max = current.max_events || '';
       renderOptions(current);
-      maxHelp.textContent = 'Only the first N events of the file are used. The limit for this analysis is ' + fmt.int(current.max_events) + ' events.';
-      srText.textContent = 'Loading the signal-region definition.';
+      maxHelp.textContent = 'The first N events of the file are used, up to ' + fmt.int(current.max_events) + '.';
+      srText.textContent = 'Loading.';
       apiGet('/analyses/' + encodeURIComponent(current.id)).then(a => {
         if (!current || a.id !== current.id) return;
         Object.assign(current, a);
-        srText.textContent = a.signal_region || 'This analysis does not describe its signal region.';
+        srText.textContent = a.signal_region || 'Not specified.';
         inputsList.innerHTML = (a.inputs || []).map(s => '<li>' + esc(s) + '</li>').join('')
-          + (a.example_url ? '<li>No file at hand? <a href="' + esc(a.example_url) + '">Download the example file</a> ('
-             + esc(a.example_name || 'example') + ') and submit it to see the workflow.</li>' : '');
-      }).catch(() => { srText.textContent = 'The signal-region definition could not be loaded.'; });
+          + (a.example_url ? '<li>Example file: <a href="' + esc(a.example_url) + '">'
+             + esc(a.example_name || 'example') + '</a></li>' : '');
+      }).catch(() => { srText.textContent = 'Could not load the signal region.'; });
     }
 
     apiGet('/info').then(info => { maxUploadBytes = (info.max_upload_mb || 0) * 1e6; if (file) setFile(file); }).catch(() => {});
@@ -711,14 +707,14 @@ window.PRISM_POLL_MS = window.PRISM_POLL_MS || 3000;
           bar.style.width = p + '%';
           lab.textContent = fmt.bytes(loaded) + ' of ' + fmt.bytes(total) + ' (' + p + ' %)';
           progress.setAttribute('aria-valuenow', String(p));
-          if (p >= 100) { lab.textContent = 'Upload complete, waiting for the server to store the file'; progress.classList.add('progress--indeterminate'); }
+          if (p >= 100) { lab.textContent = 'Upload complete, saving'; progress.classList.add('progress--indeterminate'); }
         } else {
           lab.textContent = fmt.bytes(loaded) + ' sent';
           progress.classList.add('progress--indeterminate');
         }
       }).then(res => {
         progress.hidden = true;
-        note('success', 'Job ' + res.id + ' submitted.', 'The result appears below when the job finishes.', ' <a href="jobs.html?id=' + esc(encodeURIComponent(res.id)) + '">Permalink</a>');
+        note('success', 'Job ' + res.id + ' submitted.', '', ' <a href="jobs.html?id=' + esc(encodeURIComponent(res.id)) + '">Permalink</a>');
         const a = current;
         return trackJob(res.id, jobSlot, Promise.resolve(a));
       }).catch(err => {
