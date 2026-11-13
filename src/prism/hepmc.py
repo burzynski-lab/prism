@@ -89,12 +89,17 @@ def _open_reader(path: str | Path):
     return hm.ReaderAscii(path)
 
 
+def _indexed(items):
+    """Copy a bound C++ vector without its costly StopIteration exception."""
+    return [items[i] for i in range(len(items))]
+
+
 def _event_record(evt) -> dict:
     """One HepMC GenEvent -> dict of numpy columns (FIELDS), daughters contiguous."""
     hm = _hm()
     lscale = 1.0 if evt.length_unit() == hm.Units.MM else 10.0          # cm -> mm
     mscale = 1.0 if evt.momentum_unit() == hm.Units.GEV else 1e-3       # MeV -> GeV
-    parts = list(evt.particles())
+    parts = _indexed(evt.particles())
     # order: by production vertex (so siblings are contiguous), then original id
     def key(p):
         v = p.production_vertex()
@@ -113,7 +118,7 @@ def _event_record(evt) -> dict:
         cols["charge"][i] = pdg_charge(p.pid())
         gm = p.generated_mass()
         if gm > 0 or p.is_generated_mass_set():
-            cols["mass"][i] = gm
+            cols["mass"][i] = gm * mscale
         else:
             m2 = e * e - px * px - py * py - pz * pz
             cols["mass"][i] = np.sqrt(m2) if m2 > 0 else 0.0
@@ -124,12 +129,12 @@ def _event_record(evt) -> dict:
         if pv is not None:
             pos = pv.position()
             cols["x"][i] = pos.x() * lscale; cols["y"][i] = pos.y() * lscale; cols["z"][i] = pos.z() * lscale
-            ins = [new_index[q.id()] for q in pv.particles_in()]
+            ins = [new_index[q.id()] for q in _indexed(pv.particles_in())]
             if ins:
                 cols["m1"][i] = min(ins); cols["m2"][i] = max(ins)
         ev = p.end_vertex()
         if ev is not None:
-            outs = [new_index[q.id()] for q in ev.particles_out()]
+            outs = [new_index[q.id()] for q in _indexed(ev.particles_out())]
             if outs:
                 cols["d1"][i] = min(outs); cols["d2"][i] = max(outs)
     return cols
